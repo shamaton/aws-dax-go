@@ -13,16 +13,16 @@
   permissions and limitations under the License.
 */
 
-package dax
+package daxbak
 
 import (
 	"errors"
 	"io"
 
-	"github.com/aws/aws-dax-go/dax/internal/client"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-dax-go/daxbak/internal/client"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 func (d *Dax) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {

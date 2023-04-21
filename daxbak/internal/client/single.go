@@ -21,14 +21,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aws/aws-dax-go/dax/internal/cbor"
-	"github.com/aws/aws-dax-go/dax/internal/lru"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-dax-go/daxbak/internal/cbor"
+	"github.com/aws/aws-dax-go/daxbak/internal/lru"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/client/metadata"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 const (
@@ -42,7 +42,7 @@ const (
 )
 
 const (
-	serviceName             = "dax"
+	serviceName             = "daxbak"
 	opDefineAttributeList   = "DefineAttributeList"
 	opDefineAttributeListId = "DefineAttributeListId"
 	opDefineKeySchema       = "DefineKeySchema"
@@ -429,8 +429,8 @@ func (client *SingleDaxClient) NewDaxRequest(op *request.Operation, input, outpu
 
 func (client *SingleDaxClient) buildHandlers() *request.Handlers {
 	h := &request.Handlers{}
-	h.Build.PushFrontNamed(request.NamedHandler{Name: "dax.BuildHandler", Fn: client.build})
-	h.Send.PushFrontNamed(request.NamedHandler{Name: "dax.SendHandler", Fn: client.send})
+	h.Build.PushFrontNamed(request.NamedHandler{Name: "daxbak.BuildHandler", Fn: client.build})
+	h.Send.PushFrontNamed(request.NamedHandler{Name: "daxbak.SendHandler", Fn: client.send})
 	return h
 }
 

@@ -29,12 +29,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/defaults"
 	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
 type serviceEndpoint struct {
@@ -123,8 +123,8 @@ var defaultConfig = Config{
 }
 
 var defaultPorts = map[string]int{
-	"dax":  8111,
-	"daxs": 9111,
+	"daxbak": 8111,
+	"daxs":   9111,
 }
 
 func DefaultConfig() Config {
@@ -297,8 +297,8 @@ func (cc *ClusterDaxClient) NewDaxRequest(op *request.Operation, input, output i
 
 func (cc *ClusterDaxClient) buildHandlers() *request.Handlers {
 	h := &request.Handlers{}
-	h.Build.PushFrontNamed(request.NamedHandler{Name: "dax.BuildHandler", Fn: cc.build})
-	h.Send.PushFrontNamed(request.NamedHandler{Name: "dax.SendHandler", Fn: cc.send})
+	h.Build.PushFrontNamed(request.NamedHandler{Name: "daxbak.BuildHandler", Fn: cc.build})
+	h.Send.PushFrontNamed(request.NamedHandler{Name: "daxbak.SendHandler", Fn: cc.send})
 	return h
 }
 
@@ -494,7 +494,7 @@ func parseHostPort(hostPort string) (host string, port int, scheme string, err e
 		if strings.Index(hostPort, ":") == -1 {
 			return handle(awserr.New(request.ErrCodeRequestError, "Invalid hostport", nil))
 		}
-		uriString = "dax://" + hostPort
+		uriString = "daxbak://" + hostPort
 	}
 	u, err := url.ParseRequestURI(uriString)
 	if err != nil {
@@ -616,7 +616,7 @@ func (c *cluster) refreshNow() error {
 }
 
 // This method is responsible for updating the set of active routes tracked by
-// the clsuter-dax-client in response to updates in the roster.
+// the clsuter-daxbak-client in response to updates in the roster.
 func (c *cluster) update(config []serviceEndpoint) error {
 	newEndpoints := make(map[hostPort]struct{}, len(config))
 	for _, cfg := range config {
