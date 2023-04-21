@@ -18,6 +18,7 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"sort"
 	"strings"
 
@@ -602,13 +603,13 @@ func encodeTransactWriteItemsInput(ctx aws.Context, input *dynamodb.TransactWrit
 		}
 		var operation int
 		var tableName *string
-		var key map[string]*dynamodb.AttributeValue
-		var item map[string]*dynamodb.AttributeValue
+		var key map[string]types.AttributeValue
+		var item map[string]types.AttributeValue
 		var isItem bool = false
 		var conditionExpression *string
 		var updateExpression *string
 		var expressionAttributeNames map[string]*string
-		var expressionAttributeValues map[string]*dynamodb.AttributeValue
+		var expressionAttributeValues map[string]types.AttributeValue
 		var rvOnConditionCheckFailure *string
 		opCount := 0
 		if check := twi.ConditionCheck; check != nil {
@@ -702,7 +703,7 @@ func encodeTransactWriteItemsInput(ctx aws.Context, input *dynamodb.TransactWrit
 			if err := encodeNonKeyAttributes(ctx, item, keydef, attrNamesListToId, valuesWriter); err != nil {
 				return err
 			}
-			key = map[string]*dynamodb.AttributeValue{}
+			key = map[string]types.AttributeValue{}
 			for _, attrDef := range keydef {
 				key[*attrDef.AttributeName] = item[*attrDef.AttributeName]
 			}
@@ -843,7 +844,7 @@ func encodeTransactGetItemsInput(ctx aws.Context, input *dynamodb.TransactGetIte
 			return awserr.New(request.ParamRequiredErrCode, "TransactGetItem cannot be nil", nil)
 		}
 		var tableName *string
-		var key map[string]*dynamodb.AttributeValue
+		var key map[string]types.AttributeValue
 		var projectionExpression *string
 		var expressionAttributeNames map[string]*string
 		get := tgi.Get
@@ -905,7 +906,7 @@ func encodeTransactGetItemsInput(ctx aws.Context, input *dynamodb.TransactGetIte
 	return encodeItemOperationOptionalParams(nil, input.ReturnConsumedCapacity, nil, nil, nil, nil, nil, nil, nil, writer)
 }
 
-func encodeCompoundKey(key map[string]*dynamodb.AttributeValue, writer *cbor.Writer) error {
+func encodeCompoundKey(key map[string]types.AttributeValue, writer *cbor.Writer) error {
 	var buf bytes.Buffer
 	w := cbor.NewWriter(&buf)
 	defer w.Close()
@@ -931,7 +932,7 @@ func encodeCompoundKey(key map[string]*dynamodb.AttributeValue, writer *cbor.Wri
 	return writer.WriteBytes(buf.Bytes())
 }
 
-func encodeNonKeyAttributes(ctx aws.Context, item map[string]*dynamodb.AttributeValue, keys []dynamodb.AttributeDefinition,
+func encodeNonKeyAttributes(ctx aws.Context, item map[string]types.AttributeValue, keys []types.AttributeDefinition,
 	attrNamesListToId *lru.Lru, writer *cbor.Writer) error {
 	var buf bytes.Buffer
 	w := cbor.NewWriter(&buf)
@@ -947,7 +948,7 @@ func encodeNonKeyAttributes(ctx aws.Context, item map[string]*dynamodb.Attribute
 
 func encodeScanQueryOptionalParams(ctx aws.Context, index, selection, returnConsumedCapacity *string, consistentRead *bool,
 	encodedExpressions map[int][]byte, segment, totalSegment, limit *int64, forward *bool,
-	startKey map[string]*dynamodb.AttributeValue, keySchema *lru.Lru, table string, writer *cbor.Writer) error {
+	startKey map[string]types.AttributeValue, keySchema *lru.Lru, table string, writer *cbor.Writer) error {
 
 	var err error
 	if err = writer.WriteMapStreamHeader(); err != nil {
@@ -1064,8 +1065,12 @@ func encodeScanQueryOptionalParams(ctx aws.Context, index, selection, returnCons
 	return writer.WriteStreamBreak()
 }
 
-func encodeItemOperationOptionalParamsWithToken(returnValues, returnConsumedCapacity, returnItemCollectionMetrics *string, consistentRead *bool,
-	projectionExp, conditionalExpr, updateExpr *string, exprAttrNames map[string]*string, exprAttrValues map[string]*dynamodb.AttributeValue, clientRequestToken *string, writer *cbor.Writer) error {
+func encodeItemOperationOptionalParamsWithToken(
+	returnValues types.ReturnValue,
+	returnConsumedCapacity types.ReturnConsumedCapacity,
+	returnItemCollectionMetrics types.ReturnItemCollectionMetrics,
+	consistentRead *bool,
+	projectionExp, conditionalExpr, updateExpr *string, exprAttrNames map[string]*string, exprAttrValues map[string]types.AttributeValue, clientRequestToken *string, writer *cbor.Writer) error {
 	if err := writer.WriteMapStreamHeader(); err != nil {
 		return err
 	}
@@ -1144,13 +1149,17 @@ func encodeItemOperationOptionalParamsWithToken(returnValues, returnConsumedCapa
 	return writer.WriteStreamBreak()
 }
 
-func encodeItemOperationOptionalParams(returnValues, returnConsumedCapacity, returnItemCollectionMetrics *string, consistentRead *bool,
-	projectionExp, conditionalExpr, updateExpr *string, exprAttrNames map[string]*string, exprAttrValues map[string]*dynamodb.AttributeValue, writer *cbor.Writer) error {
+func encodeItemOperationOptionalParams(
+	returnValues types.ReturnValue,
+	returnConsumedCapacity types.ReturnConsumedCapacity,
+	returnItemCollectionMetrics types.ReturnItemCollectionMetrics,
+	consistentRead *bool,
+	projectionExp, conditionalExpr, updateExpr *string, exprAttrNames map[string]*string, exprAttrValues map[string]types.AttributeValue, writer *cbor.Writer) error {
 	return encodeItemOperationOptionalParamsWithToken(returnValues, returnConsumedCapacity, returnItemCollectionMetrics, consistentRead,
 		projectionExp, conditionalExpr, updateExpr, exprAttrNames, exprAttrValues, nil, writer)
 }
 
-func parseExpressions(conditionalExpr, updateExpr, projectionExp *string, exprAttrNames map[string]*string, exprAttrValues map[string]*dynamodb.AttributeValue) (map[int][]byte, error) {
+func parseExpressions(conditionalExpr, updateExpr, projectionExp *string, exprAttrNames map[string]*string, exprAttrValues map[string]types.AttributeValue) (map[int][]byte, error) {
 	expressions := make(map[int]string)
 	if conditionalExpr != nil {
 		expressions[parser.ConditionExpr] = *conditionalExpr
@@ -1176,7 +1185,7 @@ func encodeServiceAndMethod(method int, writer *cbor.Writer) error {
 	return writer.WriteInt(method)
 }
 
-func encodeExpressions(projection, filter, keyCondition *string, exprAttrNames map[string]*string, exprAttrValues map[string]*dynamodb.AttributeValue) (map[int][]byte, error) {
+func encodeExpressions(projection, filter, keyCondition *string, exprAttrNames map[string]*string, exprAttrValues map[string]types.AttributeValue) (map[int][]byte, error) {
 	expressions := make(map[int]string)
 	if projection != nil {
 		expressions[parser.ProjectionExpr] = *projection
@@ -1191,43 +1200,34 @@ func encodeExpressions(projection, filter, keyCondition *string, exprAttrNames m
 	return encoder.Parse()
 }
 
-func translateReturnValues(returnValues *string) int {
-	if returnValues == nil {
-		return returnValueNone
-	}
-	switch *returnValues {
-	case dynamodb.ReturnValueAllOld:
+func translateReturnValues(returnValues types.ReturnValue) int {
+	switch returnValues {
+	case types.ReturnValueAllOld:
 		return returnValueAllOld
-	case dynamodb.ReturnValueUpdatedOld:
+	case types.ReturnValueUpdatedOld:
 		return returnValueUpdatedOld
-	case dynamodb.ReturnValueAllNew:
+	case types.ReturnValueAllNew:
 		return returnValueAllNew
-	case dynamodb.ReturnValueUpdatedNew:
+	case types.ReturnValueUpdatedNew:
 		return returnValueUpdatedNew
 	default:
 		return returnValueNone
 	}
 }
 
-func translateReturnConsumedCapacity(returnConsumedCapacity *string) int {
-	if returnConsumedCapacity == nil {
-		return returnConsumedCapacityNone
-	}
-	switch *returnConsumedCapacity {
-	case dynamodb.ReturnConsumedCapacityTotal:
+func translateReturnConsumedCapacity(returnConsumedCapacity types.ReturnConsumedCapacity) int {
+	switch returnConsumedCapacity {
+	case types.ReturnConsumedCapacityTotal:
 		return returnConsumedCapacityTotal
-	case dynamodb.ReturnConsumedCapacityIndexes:
+	case types.ReturnConsumedCapacityIndexes:
 		return returnConsumedCapacityIndexes
 	default:
-		return returnItemCollectionMetricsNone
+		return returnConsumedCapacityNone
 	}
 }
 
-func translateReturnItemCollectionMetrics(returnItemCollectionMetrics *string) int {
-	if returnItemCollectionMetrics == nil {
-		return returnItemCollectionMetricsNone
-	}
-	if dynamodb.ReturnItemCollectionMetricsSize == *returnItemCollectionMetrics {
+func translateReturnItemCollectionMetrics(returnItemCollectionMetrics types.ReturnItemCollectionMetrics) int {
+	if types.ReturnItemCollectionMetricsSize == returnItemCollectionMetrics {
 		return returnItemCollectionMetricsSize
 	}
 	return returnItemCollectionMetricsNone
@@ -1261,7 +1261,7 @@ func translateScanIndexForward(b *bool) int {
 	return 0
 }
 
-func hasDuplicatesWriteRequests(wrs []*dynamodb.WriteRequest, d []dynamodb.AttributeDefinition) bool {
+func hasDuplicatesWriteRequests(wrs []*dynamodb.WriteRequest, d []types.AttributeDefinition) bool {
 	if len(wrs) <= 1 {
 		return false
 	}
@@ -1290,7 +1290,7 @@ func hasDuplicatesWriteRequests(wrs []*dynamodb.WriteRequest, d []dynamodb.Attri
 	return err != nil
 }
 
-func hasDuplicateKeysAndAttributes(kaas *dynamodb.KeysAndAttributes, d []dynamodb.AttributeDefinition) bool {
+func hasDuplicateKeysAndAttributes(kaas *types.KeysAndAttributes, d []types.AttributeDefinition) bool {
 	if kaas == nil || len(kaas.Keys) <= 1 {
 		return false
 	}
@@ -1320,12 +1320,12 @@ func hasDuplicateKeysAndAttributes(kaas *dynamodb.KeysAndAttributes, d []dynamod
 }
 
 type item interface {
-	key(def dynamodb.AttributeDefinition) string
+	key(def types.AttributeDefinition) string
 }
 
-type itemKey dynamodb.AttributeDefinition
+type itemKey types.AttributeDefinition
 
-func (i itemKey) extract(v *dynamodb.AttributeValue) string {
+func (i itemKey) extract(v *types.AttributeValue) string {
 	if v == nil {
 		return ""
 	}
@@ -1346,8 +1346,8 @@ func (i itemKey) extract(v *dynamodb.AttributeValue) string {
 
 type writeItem dynamodb.WriteRequest
 
-func (w writeItem) key(def dynamodb.AttributeDefinition) string {
-	var v *dynamodb.AttributeValue
+func (w writeItem) key(def types.AttributeDefinition) string {
+	var v types.AttributeValue
 	if w.PutRequest != nil && w.PutRequest.Item != nil {
 		v = w.PutRequest.Item[*def.AttributeName]
 	} else if w.DeleteRequest != nil && w.DeleteRequest.Key != nil {
@@ -1356,15 +1356,15 @@ func (w writeItem) key(def dynamodb.AttributeDefinition) string {
 	return itemKey(def).extract(v)
 }
 
-type attrItem map[string]*dynamodb.AttributeValue
+type attrItem map[string]types.AttributeValue
 
-func (w attrItem) key(def dynamodb.AttributeDefinition) string {
+func (w attrItem) key(def types.AttributeDefinition) string {
 	v := w[*def.AttributeName]
 	return itemKey(def).extract(v)
 }
 
 type dupKeys struct {
-	defs  []dynamodb.AttributeDefinition
+	defs  []types.AttributeDefinition
 	items []item
 	eq    func(a, b item) int
 }
