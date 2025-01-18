@@ -72,15 +72,18 @@ type SingleDaxClient struct {
 	keySchema         *lru.Lru
 	attrNamesListToId *lru.Lru
 	attrListIdToNames *lru.Lru
+
+	healthStatus HealthStatus
 }
 
 var _ DaxAPI = (*SingleDaxClient)(nil)
 
-func NewSingleClient(endpoint string, connConfigData connConfig, region string, credentials aws.CredentialsProvider) (*SingleDaxClient, error) {
-	return newSingleClientWithOptions(endpoint, connConfigData, region, credentials, -1, defaultDialer.DialContext)
+func NewSingleClient(endpoint string, connConfigData connConfig, region string, credentials aws.CredentialsProvider, routeListener RouteListener) (*SingleDaxClient, error) {
+	return newSingleClientWithOptions(endpoint, connConfigData, region, credentials, -1, defaultDialer.DialContext, routeListener)
 }
 
-func newSingleClientWithOptions(endpoint string, connConfigData connConfig, region string, credentials aws.CredentialsProvider, maxPendingConnections int, dialContextFn dialContext) (*SingleDaxClient, error) {
+func newSingleClientWithOptions(endpoint string, connConfigData connConfig, region string, credentials aws.CredentialsProvider, maxPendingConnections int, dialContextFn dialContext, routeListener RouteListener) (*SingleDaxClient, error) {
+
 	po := defaultTubePoolOptions
 	if maxPendingConnections > 0 {
 		po.maxConcurrentConnAttempts = maxPendingConnections
@@ -94,6 +97,7 @@ func newSingleClientWithOptions(endpoint string, connConfigData connConfig, regi
 		tubeAuthWindowSecs: authTtlSecs * tubeAuthWindowScalar,
 		pool:               newTubePoolWithOptions(endpoint, po, connConfigData),
 		executor:           newExecutor(),
+		healthStatus:       newHealthStatus(endpoint, routeListener),
 	}
 
 	client.keySchema = &lru.Lru{
@@ -163,6 +167,7 @@ func (client *SingleDaxClient) startHealthChecks(ctx context.Context, cc *cluste
 			cc.debugLog("Health checks failed with error " + err.Error() + " for host :: " + host.host)
 			cc.onHealthCheckFailed(ctx, host)
 		} else {
+			client.healthStatus.onHealthCheckSuccess(client)
 			cc.debugLog("Health checks succeeded for host:: " + host.host)
 		}
 		return nil
@@ -301,8 +306,10 @@ func (client *SingleDaxClient) GetItemWithOptions(ctx context.Context, input *dy
 		return err
 	}
 	if err := client.executeWithRetries(ctx, OpGetItem, opt, encoder, decoder); err != nil {
+		client.healthStatus.onErrorInReadRequest(err, client)
 		return output, operationError(OpGetItem, err)
 	}
+	client.healthStatus.onSuccessInReadRequest()
 	return output, nil
 }
 
@@ -317,8 +324,10 @@ func (client *SingleDaxClient) ScanWithOptions(ctx context.Context, input *dynam
 		return err
 	}
 	if err := client.executeWithRetries(ctx, OpScan, opt, encoder, decoder); err != nil {
+		client.healthStatus.onErrorInReadRequest(err, client)
 		return output, operationError(OpScan, err)
 	}
+	client.healthStatus.onSuccessInReadRequest()
 	return output, nil
 }
 
@@ -333,8 +342,10 @@ func (client *SingleDaxClient) QueryWithOptions(ctx context.Context, input *dyna
 		return err
 	}
 	if err := client.executeWithRetries(ctx, OpQuery, opt, encoder, decoder); err != nil {
+		client.healthStatus.onErrorInReadRequest(err, client)
 		return output, operationError(OpQuery, err)
 	}
+	client.healthStatus.onSuccessInReadRequest()
 	return output, nil
 }
 
@@ -365,8 +376,10 @@ func (client *SingleDaxClient) BatchGetItemWithOptions(ctx context.Context, inpu
 		return err
 	}
 	if err := client.executeWithRetries(ctx, OpBatchGetItem, opt, encoder, decoder); err != nil {
+		client.healthStatus.onErrorInReadRequest(err, client)
 		return output, operationError(OpBatchGetItem, err)
 	}
+	client.healthStatus.onSuccessInReadRequest()
 	return output, nil
 }
 

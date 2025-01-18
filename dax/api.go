@@ -77,9 +77,22 @@ type DynamoDBAPI interface {
 	UpdateContributorInsights(ctx context.Context, params *dynamodb.UpdateContributorInsightsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateContributorInsightsOutput, error)
 	UpdateGlobalTable(ctx context.Context, params *dynamodb.UpdateGlobalTableInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateGlobalTableOutput, error)
 	UpdateGlobalTableSettings(ctx context.Context, params *dynamodb.UpdateGlobalTableSettingsInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateGlobalTableSettingsOutput, error)
+	UpdateKinesisStreamingDestination(*dynamodb.UpdateKinesisStreamingDestinationInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateKinesisStreamingDestinationOutput, error)
+	UpdateKinesisStreamingDestinationWithContext(context.Context, *dynamodb.UpdateKinesisStreamingDestinationInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateKinesisStreamingDestinationOutput, error)
+	UpdateKinesisStreamingDestinationRequest(context.Context, *dynamodb.UpdateKinesisStreamingDestinationInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateKinesisStreamingDestinationOutput, error)
 	UpdateTable(ctx context.Context, params *dynamodb.UpdateTableInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateTableOutput, error)
 	UpdateTableReplicaAutoScaling(ctx context.Context, params *dynamodb.UpdateTableReplicaAutoScalingInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateTableReplicaAutoScalingOutput, error)
 	UpdateTimeToLive(ctx context.Context, params *dynamodb.UpdateTimeToLiveInput, optFns ...func(*dynamodb.Options)) (*dynamodb.UpdateTimeToLiveOutput, error)
+
+	DeleteResourcePolicy(context.Context, *dynamodb.DeleteResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(context.Context, *dynamodb.DeleteResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(context.Context, *dynamodb.DeleteResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.DeleteResourcePolicyOutput, error)
+	GetResourcePolicy(context.Context, *dynamodb.GetResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.GetResourcePolicyOutput, error)
+	GetResourcePolicyWithContext(context.Context, *dynamodb.GetResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.GetResourcePolicyOutput, error)
+	GetResourcePolicyRequest(context.Context, *dynamodb.GetResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.GetResourcePolicyOutput, error)
+	PutResourcePolicy(context.Context, *dynamodb.PutResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(context.Context, *dynamodb.PutResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(context.Context, *dynamodb.PutResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.PutResourcePolicyOutput, error)
 }
 
 func (d *Dax) PutItem(ctx context.Context, input *dynamodb.PutItemInput, opts ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
@@ -336,6 +349,18 @@ func (d *Dax) UpdateGlobalTableSettings(context.Context, *dynamodb.UpdateGlobalT
 	return nil, d.unImpl()
 }
 
+func (d *Dax) UpdateKinesisStreamingDestination(*dynamodb.UpdateKinesisStreamingDestinationInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateKinesisStreamingDestinationOutput, error) {
+	return nil, d.unImpl()
+}
+
+func (d *Dax) UpdateKinesisStreamingDestinationWithContext(context.Context, *dynamodb.UpdateKinesisStreamingDestinationInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateKinesisStreamingDestinationOutput, error) {
+	return nil, d.unImpl()
+}
+
+func (d *Dax) UpdateKinesisStreamingDestinationRequest(context.Context, *dynamodb.UpdateKinesisStreamingDestinationInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateKinesisStreamingDestinationOutput, error) {
+	return nil, d.unImpl()
+}
+
 func (d *Dax) UpdateTable(context.Context, *dynamodb.UpdateTableInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateTableOutput, error) {
 	return nil, d.unImpl()
 }
@@ -345,6 +370,34 @@ func (d *Dax) UpdateTableReplicaAutoScaling(context.Context, *dynamodb.UpdateTab
 }
 
 func (d *Dax) UpdateTimeToLive(context.Context, *dynamodb.UpdateTimeToLiveInput, ...func(*dynamodb.Options)) (*dynamodb.UpdateTimeToLiveOutput, error) {
+	return nil, d.unImpl()
+}
+
+func (d *Dax) DeleteResourcePolicy(context.Context, *dynamodb.DeleteResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.DeleteResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) DeleteResourcePolicyWithContext(context.Context, *dynamodb.DeleteResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.DeleteResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) DeleteResourcePolicyRequest(context.Context, *dynamodb.DeleteResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.DeleteResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) GetResourcePolicy(context.Context, *dynamodb.GetResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.GetResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) GetResourcePolicyWithContext(context.Context, *dynamodb.GetResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.GetResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) GetResourcePolicyRequest(context.Context, *dynamodb.GetResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.GetResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) PutResourcePolicy(context.Context, *dynamodb.PutResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.PutResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) PutResourcePolicyWithContext(context.Context, *dynamodb.PutResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.PutResourcePolicyOutput, error) {
+	return nil, d.unImpl()
+}
+func (d *Dax) PutResourcePolicyRequest(context.Context, *dynamodb.PutResourcePolicyInput, ...func(*dynamodb.Options)) (*dynamodb.PutResourcePolicyOutput, error) {
 	return nil, d.unImpl()
 }
 

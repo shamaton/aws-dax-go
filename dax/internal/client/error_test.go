@@ -18,6 +18,9 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
+	"io"
+	"net"
 	"reflect"
 	"testing"
 
@@ -318,4 +321,34 @@ func TestDecodeNilErrorDetail(t *testing.T) {
 		t.Errorf("expected %v, got %v", expected, d)
 	}
 
+}
+
+func TestIsIoError(t *testing.T) {
+	if isIOError(context.DeadlineExceeded) != true {
+		t.Errorf("isIOError Failed to identify timeout error")
+	}
+
+	if isIOError(context.Canceled) != true {
+		t.Errorf("isIOError Failed to identify timeout error")
+	}
+
+	if isIOError(io.EOF) != true {
+		t.Errorf("isIOError Failed to identify EOF error")
+	}
+
+	if isIOError(&smithy.OperationError{Err: errors.New("network error: caused by: dial tcp 172.31.0.205:8111: connect: connection refused")}) != true {
+		t.Errorf("isIOError Failed to identify network error")
+	}
+
+	if isIOError(&smithy.OperationError{Err: nil}) == true {
+		t.Errorf("isIOError Failed to identify non-timeout error")
+	}
+
+	if isIOError(net.ErrClosed) != true {
+		t.Errorf("isIOError Failed to identify timeout error")
+	}
+
+	if isIOError(nil) == true {
+		t.Errorf("isIOError Failed to identify non-timeout error")
+	}
 }
