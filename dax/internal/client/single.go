@@ -394,7 +394,7 @@ func (client *SingleDaxClient) TransactWriteItemsWithOptions(ctx context.Context
 		output, err = decodeTransactWriteItemsOutput(ctx, reader, input, client.keySchema, client.attrListIdToNames, output)
 		return err
 	}
-	if err := client.executeWithRetries(ctx, OpBatchWriteItem, opt, encoder, decoder); err != nil {
+	if err := client.executeWithRetries(ctx, OpTransactWriteItems, opt, encoder, decoder); err != nil {
 		if failure, ok := err.(*daxTransactionCanceledFailure); ok {
 			var cancellationReasons []types.CancellationReason
 			if cancellationReasons, err = decodeTransactionCancellationReasons(ctx, failure, extractedKeys, client.attrListIdToNames); err != nil {
